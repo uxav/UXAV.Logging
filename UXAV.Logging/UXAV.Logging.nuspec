@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/uxav/UXAV.Logging/</projectUrl>
+    <description>$description$</description>
+    <repository type="git" url="https://github.com/uxav/UXAV.Logging.git" branch="master"/>
+    <copyright>Copyright 2020 UXAV Solutions Limited</copyright>
+    <tags>uxav crestron simplsharp simplsharppro</tags>
+  </metadata>
+</package>
