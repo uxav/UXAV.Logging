@@ -40,7 +40,7 @@ jobs:
 
       # Build Solution
       - name: Build
-        run: msbuild AVnetCore.sln /p:Configuration=Release
+        run: msbuild Logging.sln /p:Configuration=Release
 
       # Pack Nuget
       - name: Pack Nuget
