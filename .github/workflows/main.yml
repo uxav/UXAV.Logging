@@ -36,7 +36,7 @@ jobs:
 
       # Restore packages
       - name: Restore Nuget Packages
-        run: nuget restore UXAV.Logging.sln
+        run: nuget restore Logging.sln
 
       # Build Solution
       - name: Build
