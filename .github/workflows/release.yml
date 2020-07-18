@@ -1,0 +1,34 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Build and Publish on Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup MsBuild
+        uses: microsoft/setup-msbuild@v1
+
+      - name: Setup NuGet.exe
+        uses: NuGet/setup-nuget@v1.0.2
+
+      - name: Nuget Add Source
+        run: nuget sources Add -Name "uxav" -Source https://nuget.pkg.github.com/mikejobson/index.json -username mikejobson -password ${{ secrets.GITHUB_TOKEN }} -StorePasswordInClearText
+
+      - name: Restore Nuget Packages
+        run: nuget restore Logging.sln
+
+      - name: Build
+        run: msbuild Logging.sln /p:Configuration=Release
+
+      - name: Pack Nuget
+        run: nuget pack UXAV.Logging/UXAV.Logging.csproj
+
+      - name: Push generated package to GitHub registry
+        run: nuget push *.nupkg -source "uxav"
