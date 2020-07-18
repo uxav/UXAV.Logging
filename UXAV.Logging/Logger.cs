@@ -46,7 +46,7 @@ namespace UXAV.Logging
             }
 
             var ass = Assembly.GetExecutingAssembly().GetName();
-            Highlight($"Logger started in {ass.Name} version {ass.Version}");
+            Highlight($"{ass.Name}.{nameof(Logger)} started, version {ass.Version}");
         }
 
         public enum MessageType
