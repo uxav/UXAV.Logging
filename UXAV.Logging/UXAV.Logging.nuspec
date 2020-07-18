@@ -10,7 +10,7 @@
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/uxav/UXAV.Logging/</projectUrl>
     <description>$description$</description>
-    <repository type="git" url="https://github.com/uxav/UXAV.Logging.git" branch="master"/>
+    <repository type="git" url="https://github.com/mikejobson/UXAV.Logging.git" branch="master"/>
     <copyright>Copyright 2020 UXAV Solutions Limited</copyright>
     <tags>uxav crestron simplsharp simplsharppro</tags>
   </metadata>
