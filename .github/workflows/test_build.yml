@@ -38,7 +38,7 @@ jobs:
           Write-Output "::set-env name=VERSION::$version"
 
       - name: Write Version
-          run: Write-Output "$($env:VERSION)" | Out-File -FilePath "$($Env:GITHUB_HOME)\output\version.txt"
+          run: Write-Output "$($Env:VERSION)" | Out-File -FilePath "$($Env:GITHUB_HOME)\output\version.txt"
       
       # Upload the Version file as an artifact
       - name: Upload version.txt
