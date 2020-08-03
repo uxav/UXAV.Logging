@@ -6,6 +6,10 @@ on:
     pull_request:
       branches: [ master ]
 
+env:
+  # This gets updated automatically	  # This gets updated automatically
+  VERSION: 0.0.0
+
 jobs:
   build:
     runs-on: windows-latest
@@ -30,11 +34,23 @@ jobs:
         shell: powershell
         run: |
           $version = ./.github/scripts/GenerateVersionNumber.ps1 -Path UXAV.Logging/bin/Release/UXAV.Logging.dll
-          Write-Output "PS returned version: $version" | Out-File -FilePath version.txt
+          Write-Output "PS returned version: $version" | Out-File -FilePath ".\version.txt"
+          Write-Output "::set-env name=VERSION::$version"
       
       # Upload the Version file as an artifact
       - name: Upload version.txt
         uses: actions/upload-artifact@v1
         with:
           name: Version
-          path: version.txt
+          path: .\version.txt
+
+      - name: Create Release
+          id: create_release
+          uses: actions/create-release@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            tag_name: ${{ env.VERSION }}
+            release_name: Release ${{ env.VERSION }}
+            draft: true
+            prerelease: false
