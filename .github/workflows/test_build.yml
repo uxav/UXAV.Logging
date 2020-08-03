@@ -6,6 +6,10 @@ on:
     pull_request:
       branches: [ master ]
 
+env:
+  # This gets updated automatically
+  VERSION: 0.0.0.0
+
 jobs:
   build:
     runs-on: windows-latest
@@ -24,3 +28,21 @@ jobs:
 
       - name: Build
         run: msbuild Logging.sln /p:Configuration=Release
+      
+      # Get version number of the new dll file
+      - name: Set Version Number
+        shell: powershell
+        run: |
+          $version = ./.github/scripts/GenerateVersionNumber.ps1 -path PaymentSenseAV/bin/Release/PaymentSenseAV.dll
+          echo "PS returned version: $version"
+          Write-Output "::set-env name=VERSION::$version"
+
+      - name: Write Version
+          run: Write-Output "$($env:VERSION)" | Out-File -FilePath "$($Env:GITHUB_HOME)\output\version.txt"
+      
+      # Upload the Version file as an artifact
+      - name: Upload version.txt
+        uses: actions/upload-artifact@v1
+        with:
+          name: Version
+          path: ${{env.GITHUB_HOME}}\output\version.txt
