@@ -19,9 +19,6 @@ jobs:
       - name: Setup NuGet.exe
         uses: NuGet/setup-nuget@v1.0.2
 
-      - name: Nuget Add Source
-        run: nuget sources Add -Name "uxav" -Source https://nuget.pkg.github.com/uxav/index.json -username uxav -password ${{ secrets.UXAV_PACKAGE_TOKEN }} -StorePasswordInClearText
-
       - name: Restore Nuget Packages
         run: nuget restore Logging.sln
 
