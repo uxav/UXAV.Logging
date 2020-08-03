@@ -34,7 +34,7 @@ jobs:
         shell: powershell
         run: |
           $version = ./.github/scripts/GenerateVersionNumber.ps1 -path PaymentSenseAV/bin/Release/PaymentSenseAV.dll
-          echo "PS returned version: $version"
+          Write-Output "PS returned version: $version"
           Write-Output "::set-env name=VERSION::$version"
 
       - name: Write Version
