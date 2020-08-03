@@ -33,7 +33,7 @@ jobs:
       - name: Set Version Number
         shell: powershell
         run: |
-          $version = ./.github/scripts/GenerateVersionNumber.ps1 -path PaymentSenseAV/bin/Release/PaymentSenseAV.dll
+          $version = ./.github/scripts/GenerateVersionNumber.ps1 -Path UXAV.Logging/bin/Release/UXAV.Logging.dll
           Write-Output "PS returned version: $version"
           Write-Output "::set-env name=VERSION::$version"
 
