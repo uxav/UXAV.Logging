@@ -1,0 +1,40 @@
+name: Test Build
+
+on:
+  push:
+    branches: [ develop ]
+    pull_request:
+      branches: [ master ]
+
+env:
+  # This gets updated automatically	  # This gets updated automatically
+  VERSION: 0.0.0
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup MsBuild
+        uses: microsoft/setup-msbuild@v1
+
+      - name: Setup NuGet.exe
+        uses: NuGet/setup-nuget@v1.0.2
+
+      - name: Restore Nuget Packages
+        run: nuget restore Logging.sln
+
+      - name: Build
+        run: msbuild Logging.sln /p:Configuration=Release
+      
+      # Get version number of the new dll file
+      - name: Set Version Number
+        shell: powershell
+        run: |
+          $version = ./.github/scripts/GenerateVersionNumber.ps1 -Path UXAV.Logging/bin/Release/UXAV.Logging.dll
+          Write-Output "PS returned version: $version"
+          Write-Output "::set-env name=VERSION::$version"
+
+      

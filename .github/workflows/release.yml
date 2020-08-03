@@ -1,10 +1,14 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Build and Publish on Release
+name: Build and Publish
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [ master ]
+
+env:
+  # This gets updated automatically	  # This gets updated automatically
+  VERSION: 0.0.0
 
 jobs:
   build:
@@ -27,8 +31,27 @@ jobs:
       - name: Build
         run: msbuild Logging.sln /p:Configuration=Release
 
+      # Get version number of the new dll file
+      - name: Set Version Number
+        shell: powershell
+        run: |
+          $version = ./.github/scripts/GenerateVersionNumber.ps1 -Path UXAV.Logging/bin/Release/UXAV.Logging.dll
+          Write-Output "PS returned version: $version"
+          Write-Output "::set-env name=VERSION::$version"
+
       - name: Pack Nuget
-        run: nuget pack UXAV.Logging/UXAV.Logging.csproj
+        run: nuget pack UXAV.Logging/UXAV.Logging.csproj -Version ${{ env.VERSION }}
 
       - name: Push generated package to GitHub registry
         run: nuget push *.nupkg -source "uxav"
+        
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ env.VERSION }}
+          release_name: Release v${{ env.VERSION }}
+          draft: false
+          prerelease: false
