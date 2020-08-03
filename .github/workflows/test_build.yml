@@ -30,11 +30,11 @@ jobs:
         shell: powershell
         run: |
           $version = ./.github/scripts/GenerateVersionNumber.ps1 -Path UXAV.Logging/bin/Release/UXAV.Logging.dll
-          Write-Output "PS returned version: $version" | Out-File -FilePath "$($Env:GITHUB_HOME)\output\version.txt"
+          Write-Output "PS returned version: $version" | Out-File -FilePath version.txt
       
       # Upload the Version file as an artifact
       - name: Upload version.txt
         uses: actions/upload-artifact@v1
         with:
           name: Version
-          path: ${{env.GITHUB_HOME}}\output\version.txt
+          path: version.txt
