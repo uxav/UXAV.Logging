@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -33,6 +34,7 @@ namespace UXAV.Logging
             AddCommand(ConsoleLog, "Log", "Write a log entry");
             AddCommand(GetIpTable, "IPTable", "Print the IP Table for the current running program");
             AddCommand(SetStreamLevel, "LogStreamLevel", "Set the level logs stream on this connection", "level");
+            AddCommand(ListAssemblies, "ListAssemblies", "List the available assemblies in the app");
             if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance)
             {
                 AddCommand((argString, args, connection, respond) =>
@@ -173,7 +175,8 @@ namespace UXAV.Logging
                 respond("\r\n" + AnsiColors.Blue + header + AnsiColors.Reset + "\r\n");
 
                 respond(
-                    "  " + AnsiColors.White + "Command".PadRight(nameColLen + 2) + "  " + "Description" + AnsiColors.Reset +
+                    "  " + AnsiColors.White + "Command".PadRight(nameColLen + 2) + "  " + "Description" +
+                    AnsiColors.Reset +
                     "\r\n");
                 var line = "  ";
                 for (var i = 0; i < (nameColLen + 2 + 2 + descriptionColLen + 2); i++)
@@ -228,7 +231,9 @@ namespace UXAV.Logging
                     var model = match.Groups[7].Value;
                     var description = match.Groups[8].Value;
                     table.AddRow(ipId.ToString("X2"), model, deviceType, deviceId, port, ipAddress,
-                        status ? AnsiColors.Green + "ONLINE " + AnsiColors.Reset : AnsiColors.White + "OFFLINE" + AnsiColors.Reset,
+                        status
+                            ? AnsiColors.Green + "ONLINE " + AnsiColors.Reset
+                            : AnsiColors.White + "OFFLINE" + AnsiColors.Reset,
                         description);
                 }
 
@@ -261,6 +266,63 @@ namespace UXAV.Logging
             respond($"Your log streaming level is now set to: {level}");
         }
 
+        private static void ListAssemblies(string argString, ObjectModel.ReadOnlyDictionary<string, string> args,
+            ConsoleConnection connection, CommandResponseAction respond)
+        {
+            var table = new ConsoleTable("Assembly Name", "Version", "Company", "Description");
+            foreach (var fileInfo in GetAssemblyInfo())
+            {
+                if (fileInfo.ReadError)
+                {
+                    table.AddRow(fileInfo.Name, AnsiColors.Red + fileInfo.Version + AnsiColors.Reset, "", "");
+                    continue;
+                }
+                table.AddRow(fileInfo.Name, fileInfo.Version, fileInfo.Company, fileInfo.Description);
+            }
+
+            respond("\r\n" + table.ToString(true));
+        }
+
+        private static IEnumerable<AssemblyFileInfo> GetAssemblyInfo()
+        {
+            var results = new List<AssemblyFileInfo>();
+            var files = Directory.GetFiles(InitialParametersClass.ProgramDirectory.ToString(), "*.dll");
+            foreach (var file in files)
+            {
+                var info = new AssemblyFileInfo();
+                try
+                {
+                    var an = AssemblyName.GetAssemblyName(file);
+                    var vi = FileVersionInfo.GetVersionInfo(file);
+                    info.Name = an.Name;
+                    info.Version = an.Version.ToString();
+                    info.Company = vi.CompanyName;
+                    info.Description = vi.FileDescription;
+                }
+                catch(Exception e)
+                {
+                    info.Name = file;
+                    info.Version = e.Message;
+                    info.ReadError = true;
+                    info.Company = string.Empty;
+                    info.Description = string.Empty;
+                }
+
+                results.Add(info);
+            }
+
+            return results.OrderBy(i => i.Name);
+        }
+
+        private struct AssemblyFileInfo
+        {
+            public string Version { get; set; }
+            public string Name { get; set; }
+            public string Company { get; set; }
+            public bool ReadError { get; set; }
+            public string Description { get; set; }
+        }
+
         private static void GetAutoDiscovery(string argString, ObjectModel.ReadOnlyDictionary<string, string> args,
             ConsoleConnection connection, CommandResponseAction respond)
         {
@@ -285,7 +347,8 @@ namespace UXAV.Logging
                     var hostname = match.Groups[4].Value;
                     var network = match.Groups[3].Value;
                     var detailsString = match.Groups[5].Value;
-                    var details = Regex.Match(detailsString, @"([\w-]+).*\[(.+?)(?: \((.+)\))?, *#(\w{8})\]\ ?(?:@E-(\w{12}))*");
+                    var details = Regex.Match(detailsString,
+                        @"([\w-]+).*\[(.+?)(?: \((.+)\))?, *#(\w{8})\]\ ?(?:@E-(\w{12}))*");
                     if (details.Success)
                     {
                         var model = details.Groups[1].Value;
