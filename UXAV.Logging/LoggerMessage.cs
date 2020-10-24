@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using UXAV.Logging.Console;
@@ -9,15 +10,13 @@ namespace UXAV.Logging
 {
     public class LoggerMessage
     {
-        private readonly Exception _exception;
-        private readonly StackTrace _stackTrace;
         private string _toString;
         private readonly Type _tracedType;
+        private StackTrace _stackTrace;
 
         internal LoggerMessage(Logging.Logger.LoggerLevel level, StackTrace stackTrace, Logging.Logger.MessageType messageType,
             string message)
         {
-            _stackTrace = stackTrace;
             Level = level;
             Time = DateTime.Now;
             MessageType = messageType;
@@ -25,35 +24,14 @@ namespace UXAV.Logging
             _tracedType = stackTrace.GetFrame(0).GetMethod().DeclaringType;
         }
 
-        internal LoggerMessage(StackTrace stackTrace, Exception e)
+        internal LoggerMessage(Exception e)
         {
-            _stackTrace = stackTrace;
-            _exception = e;
             Level = Logging.Logger.LoggerLevel.Error;
             Time = DateTime.Now;
             MessageType = Logging.Logger.MessageType.Exception;
-            Message = e.ToString();
-            _tracedType = stackTrace.GetFrame(0).GetMethod().DeclaringType;
-            /*var linePadding = Ansi.BackgroundRed + " " + "\u001b[48;5;$236m";
-            linePadding = linePadding + " " + GetPaddedLineName(string.Empty) + " ";
-
-            linePadding = linePadding + "\u001b[48;5;$235m\u001b[38;5;$246m";
-            for (var i = 0; i < 14; i++)
-            {
-                linePadding = linePadding + " ";
-            }
-
-            linePadding = linePadding + Ansi.Reset + "     ";
-
-            _contents = Ansi.BackgroundRed + "  " + GetPaddedLineName("Exception") + " " +
-                        "\u001b[48;5;$124m\u001b[38;5;$246m" + " " + Time.ToString("HH:mm:ss.fff") + " " + Ansi.Reset +
-                        " 🔥  " + Ansi.BrightRed + e.GetType().Name + ": " + Ansi.Reset + Ansi.Red + e.Message +
-                        Ansi.Reset;
-            foreach (var line in e.StackTrace.Split(new []{Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries))
-            {
-                _contents = _contents + Environment.NewLine + linePadding + Ansi.White + line.TrimStart();
-            }
-            _contents = _contents + Ansi.Reset;*/
+            Message = $"{e.GetType().Name}: {e.Message}";
+            _stackTrace = new StackTrace(e, true);
+            _tracedType = _stackTrace.GetFrames().Last().GetMethod().DeclaringType;
         }
 
         public DateTime Time { get; }
@@ -93,13 +71,9 @@ namespace UXAV.Logging
 
         public string TracedNameFull => _tracedType == null ? string.Empty : _tracedType.FullName;
 
-        public string FileName =>
-            _stackTrace.GetFrame(0) == null ? string.Empty : _stackTrace.GetFrame(0).GetFileName();
-
-        public int FileLineNumber => _stackTrace?.GetFrame(0)?.GetFileLineNumber() ?? 0;
         public string Message { get; }
 
-        public string StackTrace => _stackTrace.ToString();
+        public string StackTrace => _stackTrace?.ToString();
 
         public string GetFormattedForConsole()
         {
@@ -144,9 +118,7 @@ namespace UXAV.Logging
                         writer.Write(AnsiColors.Red);
                         break;
                     case Logging.Logger.MessageType.Error:
-                        writer.Write(AnsiColors.BrightRed + "Error: " + AnsiColors.Reset +
-                                     _stackTrace.GetFrame(1).GetMethod().Name +
-                                     "() " + AnsiColors.Red);
+                        writer.Write(AnsiColors.BrightRed);
                         break;
                     default:
                         writer.Write(AnsiColors.White);
@@ -181,7 +153,7 @@ namespace UXAV.Logging
                         writer.Write("Warning: ");
                         break;
                     case Logging.Logger.MessageType.Error:
-                        writer.Write("  Error: " + _stackTrace.GetFrame(0).GetMethod().Name + "() ");
+                        writer.Write("  Error: ");
                         break;
                     case Logging.Logger.MessageType.Normal:
                         writer.Write("   Info: ");
@@ -222,9 +194,7 @@ namespace UXAV.Logging
 
         public override string ToString()
         {
-            return _exception != null
-                ? $"Exception | {_exception.Message}{Environment.NewLine}{_exception.StackTrace}"
-                : $"{Level} | {(string.IsNullOrEmpty(TracedName) ? string.Empty : TracedName + " | ")}{Message}";
+            return $"{Level} | {(string.IsNullOrEmpty(TracedName) ? string.Empty : TracedName + " | ")}{Message}";
         }
     }
 }

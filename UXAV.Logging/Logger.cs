@@ -728,13 +728,7 @@ namespace UXAV.Logging
 
         public static void Error(Exception e)
         {
-            Error(1, e);
-        }
-
-        public static void Error(int skipFrames, Exception e)
-        {
-            var frame = new StackTrace(skipFrames + 1, true);
-            WriteLog(new LoggerMessage(frame, e));
+            WriteLog(new LoggerMessage(e));
         }
 
         private static void WriteLog(LoggerMessage message)
