@@ -21,7 +21,7 @@ jobs:
         uses: microsoft/setup-msbuild@v1
 
       - name: Setup NuGet.exe
-        uses: NuGet/setup-nuget@v1.0.2
+        uses: NuGet/setup-nuget@v1.0.5
 
       - name: Restore Nuget Packages
         run: nuget restore Logging.sln
@@ -35,6 +35,8 @@ jobs:
         run: |
           $version = ./.github/scripts/GenerateVersionNumber.ps1 -Path UXAV.Logging/bin/Release/UXAV.Logging.dll
           Write-Output "PS returned version: $version"
-          Write-Output "::set-env name=VERSION::$version"
+          echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
-      
+      - name: Pack Nuget
+        run: nuget pack UXAV.Logging/UXAV.Logging.csproj -Version ${{ env.VERSION }}
+        
