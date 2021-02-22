@@ -33,6 +33,10 @@ namespace UXAV.Logging
             AddCommand(TailLog, "Tail", "Tail the logger entries", "count");
             AddCommand(ConsoleLog, "Log", "Write a log entry");
             AddCommand(GetIpTable, "IPTable", "Print the IP Table for the current running program");
+            AddCommand((argString, args, connection, respond) =>
+            {
+                respond($"Logging level is set to: {_level}");
+            }, "Level", "Get the current logging level");
             AddCommand(SetStreamLevel, "LogStreamLevel", "Set the level logs stream on this connection", "level");
             AddCommand(ListAssemblies, "ListAssemblies", "List the available assemblies in the app");
             if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance)
@@ -83,6 +87,8 @@ namespace UXAV.Logging
                 }
 
                 _level = value;
+
+                Highlight($"Logging level set to: {_level}");
             }
         }
 
@@ -277,6 +283,7 @@ namespace UXAV.Logging
                     table.AddRow(fileInfo.Name, AnsiColors.Red + fileInfo.Version + AnsiColors.Reset, "", "");
                     continue;
                 }
+
                 table.AddRow(fileInfo.Name, fileInfo.Version, fileInfo.Company, fileInfo.Description);
             }
 
@@ -299,7 +306,7 @@ namespace UXAV.Logging
                     info.Company = vi.CompanyName;
                     info.Description = vi.FileDescription;
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     info.Name = file;
                     info.Version = e.Message;
