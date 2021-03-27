@@ -59,7 +59,7 @@ jobs:
         run: nuget restore UXAV.Logging.sln
 
       - name: Build
-        run: msbuild UXAV.Logging.sln /p:Configuration=Release
+        run: msbuild Logging.sln /p:Configuration=Release
 
       - name: Pack Nuget
         run: nuget pack UXAV.Logging/UXAV.Logging.csproj
