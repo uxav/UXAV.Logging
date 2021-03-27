@@ -32,7 +32,6 @@ jobs:
           echo "VERSION_TITLE=$versionTitle" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Create pre-release tag
-        if: github.ref != 'master'
         if: github.ref != 'refs/heads/master'
         shell: powershell
         run: |
