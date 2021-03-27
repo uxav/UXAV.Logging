@@ -1,24 +1,56 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Build and Publish
+name: Build and Release
 
 on:
   push:
-    branches: [ master ]
-
+    branches: [ master, develop ]
+    
 env:
-  # This gets updated automatically	  # This gets updated automatically
-  VERSION: 0.0.0
+  # This gets updated automatically
+  VERSION: version_string
+  VERSION_TITLE: version_title
+  PRERELEASE: false
 
 jobs:
   build:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          lfs: true
 
+      - name: Get Version Number
+        shell: powershell
+        run: |
+          $version = ./.github/scripts/GetVersionFromAssemblyInfo.ps1 -Path UXAV.Logging/Properties/AssemblyInfo.cs
+          Write-Output "Version is: $version"
+          $versionTitle = ./.github/scripts/CreateVersionTitle.ps1 -Version $version
+          Write-Output "Version title is: $version"
+          echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "VERSION_TITLE=$versionTitle" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Create pre-release tag
+        if: github.ref != 'master'
+        if: github.ref != 'refs/heads/master'
+        shell: powershell
+        run: |
+          $version = ./.github/scripts/CreateAvailablePreReleaseVersion.ps1 -Version ${{ env.VERSION }} -PreReleaseName beta
+          Write-Output "Version is: $version"
+          $versionTitle = ./.github/scripts/CreateVersionTitle.ps1 -Version $version
+          Write-Output "Version title is: $versionTitle"
+          echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "VERSION_TITLE=$versionTitle" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "PRERELEASE=true" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Update AssemblyInfo.cs
+        shell: powershell
+        run: ./.github/scripts/UpdateAssemblyVersion.ps1 -Path UXAV.Logging/Properties/AssemblyInfo.cs -Version ${{ env.VERSION }}
+        
       - name: Setup MsBuild
         uses: microsoft/setup-msbuild@v1
-
+        
       - name: Setup NuGet.exe
         uses: NuGet/setup-nuget@v1.0.5
 
@@ -31,16 +63,8 @@ jobs:
       - name: Build
         run: msbuild Logging.sln /p:Configuration=Release
 
-      # Get version number of the new dll file
-      - name: Set Version Number
-        shell: powershell
-        run: |
-          $version = ./.github/scripts/GenerateVersionNumber.ps1 -Path UXAV.Logging/bin/Release/UXAV.Logging.dll
-          Write-Output "PS returned version: $version"
-          echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
       - name: Pack Nuget
-        run: nuget pack UXAV.Logging/UXAV.Logging.csproj -Version ${{ env.VERSION }}
+        run: nuget pack UXAV.Logging/UXAV.Logging.csproj
 
       - name: Push generated package to GitHub registry
         run: nuget push *.nupkg -source "uxav"
@@ -52,7 +76,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: v${{ env.VERSION }}
-          release_name: Release v${{ env.VERSION }}
+          release_name: ${{ env.VERSION_TITLE }}
           draft: false
-          prerelease: false
+          prerelease: ${{ env.PRERELEASE }}
           
