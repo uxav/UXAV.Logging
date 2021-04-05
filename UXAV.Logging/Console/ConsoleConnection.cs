@@ -328,6 +328,10 @@ namespace UXAV.Logging.Console
                 // ReSharper disable once RedundantJumpStatement
                 return;
             }
+            catch (IOException e)
+            {
+                Logger.Error(e);
+            }
         }
 
         public void WriteLine(string message)
