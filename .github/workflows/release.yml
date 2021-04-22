@@ -69,7 +69,7 @@ jobs:
         run: nuget pack UXAV.Logging/UXAV.Logging.csproj
 
       - name: Push generated package to nuget.org
-        run: nuget push *.nupkg
+        run: nuget push *.nupkg -source https://api.nuget.org/v3/index.json
 
       - name: Push generated package to GitHub registry
         run: nuget push *.nupkg -source "uxav"
