@@ -39,6 +39,8 @@ namespace UXAV.Logging
         [JsonConverter(typeof(StringEnumConverter))]
         public Logging.Logger.LoggerLevel Level { get; }
 
+        public int LevelValue => (int) Level;
+
         [JsonConverter(typeof(StringEnumConverter))]
         public Logging.Logger.MessageType MessageType { get; }
 

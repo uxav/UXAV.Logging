@@ -355,7 +355,7 @@ namespace UXAV.Logging
                     var network = match.Groups[3].Value;
                     var detailsString = match.Groups[5].Value;
                     var details = Regex.Match(detailsString,
-                        @"([\w-]+).*\[(.+?)(?: \((.+)\))?, *#(\w{8})\]\ ?(?:@E-(\w{12}))*");
+                        @"([\w-]+).*\[(.+?)(?: \((.+)\))?, *[^\w]?(\w{8,})\]\ ?(?:@E-(\w{12}))*");
                     if (details.Success)
                     {
                         var model = details.Groups[1].Value;
