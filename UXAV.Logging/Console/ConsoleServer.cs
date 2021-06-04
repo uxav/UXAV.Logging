@@ -48,19 +48,22 @@ namespace UXAV.Logging.Console
             {
                 if (InitialParametersClass.NumberOfExternalEthernetInterfaces > 0)
                 {
-                    var id = Crestron.SimplSharp.CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(Crestron.SimplSharp.EthernetAdapterType.EthernetCSAdapter); 
-                    var controlSubnetIp = Crestron.SimplSharp.CrestronEthernetHelper.GetEthernetParameter(Crestron.SimplSharp.CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, id);
+                    Logger.Log("Control system has external ethernet interfaces, will attempt to map port to internal IP");
+                    var id = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetCSAdapter); 
+                    var controlSubnetIp = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, id);
+                    Logger.Log($"CS IP Address is: {controlSubnetIp}");
                     var result = CrestronEthernetHelper.AddPortForwarding((ushort) portNumber, (ushort) portNumber,
                         controlSubnetIp, CrestronEthernetHelper.ePortMapTransport.TCP);
                     if (result == CrestronEthernetHelper.PortForwardingUserPatRetCodes.NoErr)
                     {
                         _csPortForwardIp = controlSubnetIp;
+                        Logger.Log(
+                            $"Port Fowarding result = {result}, forwarded TCP port {portNumber} to internal IP: {controlSubnetIp}");
                     }
                     else
                     {
                         Logger.Warn($"Could not create port forwarding for Logger, result = {result}");
                     }
-                    Logger.Log("Control system has external ethernet interfaces, will attempt to map port to Control Subnet");
                 }
             }
             catch (Exception e)
@@ -70,7 +73,7 @@ namespace UXAV.Logging.Console
 
             _listeningThread = new Thread(ListenProcess) {Name = "LoggerRx" + InitialParametersClass.ApplicationNumber};
             _listeningThread.Start();
-            Logging.Logger.Highlight($"Logger started console on port {portNumber}");
+            Logger.Highlight($"Logger started console on port {portNumber}");
         }
 
         public int Port { get; private set; }
@@ -85,11 +88,11 @@ namespace UXAV.Logging.Console
             {
                 server.Start();
                 _listening = true;
-                Logging.Logger.Highlight("Started listening for console connections on port {0}", Port);
+                Logger.Highlight("Started listening for console connections on port {0}", Port);
             }
             catch (Exception e)
             {
-                Logging.Logger.Error("Could not start console server socket on port {0}, {1}", Port, e.Message);
+                Logger.Error("Could not start console server socket on port {0}, {1}", Port, e.Message);
                 return;
             }
 
@@ -124,13 +127,13 @@ namespace UXAV.Logging.Console
                     {
                         if (!(e is IOException))
                         {
-                            Logging.Logger.Error("Error in telnet negotiation loop", e.Message);
+                            Logger.Error("Error in telnet negotiation loop", e.Message);
                         }
                     }
 
                     if (!client.Connected)
                     {
-                        Logging.Logger.Highlight("Exiting, client has disconnected");
+                        Logger.Highlight("Exiting, client has disconnected");
                         return;
                     }
 
@@ -190,7 +193,11 @@ namespace UXAV.Logging.Console
                 Logger.Log("Attempting to remove port forwarding for Logger...");
                 var result = CrestronEthernetHelper.RemovePortForwarding((ushort) Port, (ushort) Port, _csPortForwardIp,
                     CrestronEthernetHelper.ePortMapTransport.TCP);
-                if(result == CrestronEthernetHelper.PortForwardingUserPatRetCodes.NoErr) return;
+                if (result == CrestronEthernetHelper.PortForwardingUserPatRetCodes.NoErr)
+                {
+                    Logger.Log("Port forwarding removed ok!");
+                    return;
+                }
                 Logger.Warn($"Could not remove port forwarding for Logger, result = {result}");
                 _csPortForwardIp = null;
             }
