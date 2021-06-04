@@ -15,6 +15,7 @@ namespace UXAV.Logging.Console
         private readonly Dictionary<int, ConsoleConnection> _connections = new Dictionary<int, ConsoleConnection>();
         private Thread _listeningThread;
         private bool _listening;
+        private string _csPortForwardIp;
         private const byte IAC = 255;
         private const byte DO = 253;
         private const byte WILL = 251;
@@ -42,10 +43,37 @@ namespace UXAV.Logging.Console
             {
                 throw new Exception("Logger already running");
             }
+            
+            try
+            {
+                if (InitialParametersClass.NumberOfExternalEthernetInterfaces > 0)
+                {
+                    Logger.Log("Control system has external ethernet interfaces, will attempt to map port to internal IP");
+                    var id = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetCSAdapter); 
+                    var controlSubnetIp = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, id);
+                    Logger.Log($"CS IP Address is: {controlSubnetIp}");
+                    var result = CrestronEthernetHelper.AddPortForwarding((ushort) portNumber, (ushort) portNumber,
+                        controlSubnetIp, CrestronEthernetHelper.ePortMapTransport.TCP);
+                    if (result == CrestronEthernetHelper.PortForwardingUserPatRetCodes.NoErr)
+                    {
+                        _csPortForwardIp = controlSubnetIp;
+                        Logger.Log(
+                            $"Port Fowarding result = {result}, forwarded TCP port {portNumber} to internal IP: {controlSubnetIp}");
+                    }
+                    else
+                    {
+                        Logger.Warn($"Could not create port forwarding for Logger, result = {result}");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
+            }
 
             _listeningThread = new Thread(ListenProcess) {Name = "LoggerRx" + InitialParametersClass.ApplicationNumber};
             _listeningThread.Start();
-            Logging.Logger.Highlight($"Logger started console on port {portNumber}");
+            Logger.Highlight($"Logger started console on port {portNumber}");
         }
 
         public int Port { get; private set; }
@@ -56,30 +84,15 @@ namespace UXAV.Logging.Console
         {
             var server = new TcpListener(IPAddress.Any, Port);
 
-            /*while (!_listening)
-            {
-                try
-                {
-                    server.Start();
-                    _listening = true;
-                    ErrorLog.Notice("Started listening for console connections on port {0}", Port);
-                }
-                catch (Exception e)
-                {
-                    ErrorLog.Error("Could not start console server socket on port {0}, {1}", Port, e.Message);
-                    Thread.Sleep(1000);
-                }
-            }*/
-
             try
             {
                 server.Start();
                 _listening = true;
-                Logging.Logger.Highlight("Started listening for console connections on port {0}", Port);
+                Logger.Highlight("Started listening for console connections on port {0}", Port);
             }
             catch (Exception e)
             {
-                Logging.Logger.Error("Could not start console server socket on port {0}, {1}", Port, e.Message);
+                Logger.Error("Could not start console server socket on port {0}, {1}", Port, e.Message);
                 return;
             }
 
@@ -114,13 +127,13 @@ namespace UXAV.Logging.Console
                     {
                         if (!(e is IOException))
                         {
-                            Logging.Logger.Error("Error in telnet negotiation loop", e.Message);
+                            Logger.Error("Error in telnet negotiation loop", e.Message);
                         }
                     }
 
                     if (!client.Connected)
                     {
-                        Logging.Logger.Highlight("Exiting, client has disconnected");
+                        Logger.Highlight("Exiting, client has disconnected");
                         return;
                     }
 
@@ -171,6 +184,26 @@ namespace UXAV.Logging.Console
             foreach (var client in clients)
             {
                 client.Dispose();
+            }
+            
+            if(string.IsNullOrEmpty(_csPortForwardIp)) return;
+
+            try
+            {
+                Logger.Log("Attempting to remove port forwarding for Logger...");
+                var result = CrestronEthernetHelper.RemovePortForwarding((ushort) Port, (ushort) Port, _csPortForwardIp,
+                    CrestronEthernetHelper.ePortMapTransport.TCP);
+                if (result == CrestronEthernetHelper.PortForwardingUserPatRetCodes.NoErr)
+                {
+                    Logger.Log("Port forwarding removed ok!");
+                    return;
+                }
+                Logger.Warn($"Could not remove port forwarding for Logger, result = {result}");
+                _csPortForwardIp = null;
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
             }
         }
 
