@@ -198,7 +198,8 @@ namespace UXAV.Logging
         {
             if (MessageType == Logger.MessageType.Exception)
             {
-                return $"{(string.IsNullOrEmpty(TracedName) ? string.Empty : TracedName + " | ")}{Message}\r\n{_stackTrace}";
+                var trace = _stackTrace.ToString().Replace('\r', '\n');
+                return $"{(string.IsNullOrEmpty(TracedName) ? string.Empty : TracedName + " | ")}{Message}\r{trace}";
             }
             return $"{(string.IsNullOrEmpty(TracedName) ? string.Empty : TracedName + " | ")}{Message}";
         }
