@@ -8,16 +8,16 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("Crestron SimplSharp Logger")]
 [assembly: AssemblyCompany("UXAV")]
 [assembly: AssemblyProduct("UXAV.Logging")]
-[assembly: AssemblyCopyright("Copyright © UXAV Solutions Limited 2020")]
+[assembly: AssemblyCopyright("Copyright © UXAV Solutions Limited 2021")]
 
-// Setting ComVisible to false makes the types in this assembly not visible 
-// to COM components.  If you need to access a type in this assembly from 
+// Setting ComVisible to false makes the types in this assembly not visible
+// to COM components.  If you need to access a type in this assembly from
 // COM, set the ComVisible attribute to true on that type.
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("6F84649D-129E-4E0F-9CA7-833EE4F56148")]
 
-[assembly: AssemblyVersion("1.2.0.*")]
-[assembly: AssemblyFileVersion("1.2.0")]
-[assembly: AssemblyInformationalVersion("1.2.0")]
+[assembly: AssemblyVersion("1.2.1.*")]
+[assembly: AssemblyFileVersion("1.2.1")]
+[assembly: AssemblyInformationalVersion("1.2.1")]
