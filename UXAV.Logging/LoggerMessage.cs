@@ -196,6 +196,10 @@ namespace UXAV.Logging
 
         public override string ToString()
         {
+            if (MessageType == Logger.MessageType.Exception)
+            {
+                return $"{(string.IsNullOrEmpty(TracedName) ? string.Empty : TracedName + " | ")}{Message}\r\n{_stackTrace}";
+            }
             return $"{(string.IsNullOrEmpty(TracedName) ? string.Empty : TracedName + " | ")}{Message}";
         }
     }
