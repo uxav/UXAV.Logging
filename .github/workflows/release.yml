@@ -51,7 +51,7 @@ jobs:
         uses: microsoft/setup-msbuild@v1
         
       - name: Setup NuGet.exe
-        uses: NuGet/setup-nuget@v1.0.5
+        uses: NuGet/setup-nuget@v1
         
       - name: Add Nuget API Key for nuget.org
         run: nuget setapikey ${{ secrets.NUGET_API_KEY }}
