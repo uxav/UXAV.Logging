@@ -17,6 +17,7 @@ namespace UXAV.Logging
         internal LoggerMessage(Logger.LoggerLevel level, StackTrace stackTrace, Logger.MessageType messageType,
             string message)
         {
+            Id = Guid.NewGuid().ToString();
             Level = level;
             Time = DateTime.Now;
             MessageType = messageType;
@@ -26,6 +27,7 @@ namespace UXAV.Logging
 
         internal LoggerMessage(Exception e)
         {
+            Id = Guid.NewGuid().ToString();
             Level = Logger.LoggerLevel.Error;
             Time = DateTime.Now;
             MessageType = Logger.MessageType.Exception;
@@ -34,12 +36,14 @@ namespace UXAV.Logging
             _tracedType = _stackTrace.GetFrames().Last().GetMethod().DeclaringType;
         }
 
+        public string Id { get; }
+
         public DateTime Time { get; }
 
         [JsonConverter(typeof(StringEnumConverter))]
         public Logger.LoggerLevel Level { get; }
 
-        public int LevelValue => (int) Level;
+        public int LevelValue => (int)Level;
 
         [JsonConverter(typeof(StringEnumConverter))]
         public Logger.MessageType MessageType { get; }
@@ -201,6 +205,7 @@ namespace UXAV.Logging
                 var trace = _stackTrace.ToString().Replace('\r', '\n');
                 return $"{(string.IsNullOrEmpty(TracedName) ? string.Empty : TracedName + " | ")}{Message}\n{trace}";
             }
+
             return $"{(string.IsNullOrEmpty(TracedName) ? string.Empty : TracedName + " | ")}{Message}";
         }
     }
