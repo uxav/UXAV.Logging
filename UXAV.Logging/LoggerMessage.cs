@@ -12,11 +12,12 @@ namespace UXAV.Logging
     {
         private string _toString;
         private readonly Type _tracedType;
-        private StackTrace _stackTrace;
+        private readonly StackTrace _stackTrace;
 
-        internal LoggerMessage(Logging.Logger.LoggerLevel level, StackTrace stackTrace, Logging.Logger.MessageType messageType,
+        internal LoggerMessage(Logger.LoggerLevel level, StackTrace stackTrace, Logger.MessageType messageType,
             string message)
         {
+            Id = Guid.NewGuid().ToString();
             Level = level;
             Time = DateTime.Now;
             MessageType = messageType;
@@ -26,23 +27,26 @@ namespace UXAV.Logging
 
         internal LoggerMessage(Exception e)
         {
-            Level = Logging.Logger.LoggerLevel.Error;
+            Id = Guid.NewGuid().ToString();
+            Level = Logger.LoggerLevel.Error;
             Time = DateTime.Now;
-            MessageType = Logging.Logger.MessageType.Exception;
+            MessageType = Logger.MessageType.Exception;
             Message = $"{e.GetType().Name}: {e.Message}";
             _stackTrace = new StackTrace(e, true);
             _tracedType = _stackTrace.GetFrames().Last().GetMethod().DeclaringType;
         }
 
+        public string Id { get; }
+
         public DateTime Time { get; }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public Logging.Logger.LoggerLevel Level { get; }
+        public Logger.LoggerLevel Level { get; }
 
-        public int LevelValue => (int) Level;
+        public int LevelValue => (int)Level;
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public Logging.Logger.MessageType MessageType { get; }
+        public Logger.MessageType MessageType { get; }
 
         public string ColorClass
         {
@@ -50,18 +54,18 @@ namespace UXAV.Logging
             {
                 switch (MessageType)
                 {
-                    case Logging.Logger.MessageType.Normal:
+                    case Logger.MessageType.Normal:
                         return "basic";
-                    case Logging.Logger.MessageType.Debug:
+                    case Logger.MessageType.Debug:
                         return "info";
-                    case Logging.Logger.MessageType.Highlight:
+                    case Logger.MessageType.Highlight:
                         return "control";
-                    case Logging.Logger.MessageType.Success:
+                    case Logger.MessageType.Success:
                         return "success";
-                    case Logging.Logger.MessageType.Warning:
+                    case Logger.MessageType.Warning:
                         return "warning";
-                    case Logging.Logger.MessageType.Error:
-                    case Logging.Logger.MessageType.Exception:
+                    case Logger.MessageType.Error:
+                    case Logger.MessageType.Exception:
                         return "danger";
                     default:
                         return string.Empty;
@@ -83,17 +87,17 @@ namespace UXAV.Logging
             {
                 switch (MessageType)
                 {
-                    case Logging.Logger.MessageType.Debug:
+                    case Logger.MessageType.Debug:
                         writer.Write(AnsiColors.BackgroundMagenta + " ");
                         break;
-                    case Logging.Logger.MessageType.Success:
+                    case Logger.MessageType.Success:
                         writer.Write(AnsiColors.BackgroundGreen + " ");
                         break;
-                    case Logging.Logger.MessageType.Warning:
+                    case Logger.MessageType.Warning:
                         writer.Write(AnsiColors.BackgroundYellow + " ");
                         break;
-                    case Logging.Logger.MessageType.Exception:
-                    case Logging.Logger.MessageType.Error:
+                    case Logger.MessageType.Exception:
+                    case Logger.MessageType.Error:
                         writer.Write(AnsiColors.BackgroundRed + " ");
                         break;
                     default:
@@ -107,19 +111,19 @@ namespace UXAV.Logging
 
                 switch (MessageType)
                 {
-                    case Logging.Logger.MessageType.Highlight:
+                    case Logger.MessageType.Highlight:
                         writer.Write(AnsiColors.Bold);
                         break;
-                    case Logging.Logger.MessageType.Success:
+                    case Logger.MessageType.Success:
                         writer.Write(AnsiColors.BrightGreen);
                         break;
-                    case Logging.Logger.MessageType.Warning:
+                    case Logger.MessageType.Warning:
                         writer.Write(AnsiColors.BrightYellow);
                         break;
-                    case Logging.Logger.MessageType.Exception:
+                    case Logger.MessageType.Exception:
                         writer.Write(AnsiColors.Red);
                         break;
-                    case Logging.Logger.MessageType.Error:
+                    case Logger.MessageType.Error:
                         writer.Write(AnsiColors.BrightRed);
                         break;
                     default:
@@ -142,25 +146,25 @@ namespace UXAV.Logging
 
                 switch (MessageType)
                 {
-                    case Logging.Logger.MessageType.Debug:
+                    case Logger.MessageType.Debug:
                         writer.Write("  Debug: ");
                         break;
-                    case Logging.Logger.MessageType.Highlight:
+                    case Logger.MessageType.Highlight:
                         writer.Write(" Notice: ");
                         break;
-                    case Logging.Logger.MessageType.Success:
+                    case Logger.MessageType.Success:
                         writer.Write("     OK: ");
                         break;
-                    case Logging.Logger.MessageType.Warning:
+                    case Logger.MessageType.Warning:
                         writer.Write("Warning: ");
                         break;
-                    case Logging.Logger.MessageType.Error:
+                    case Logger.MessageType.Error:
                         writer.Write("  Error: ");
                         break;
-                    case Logging.Logger.MessageType.Normal:
+                    case Logger.MessageType.Normal:
                         writer.Write("   Info: ");
                         break;
-                    case Logging.Logger.MessageType.Exception:
+                    case Logger.MessageType.Exception:
                         writer.Write("  Error: ");
                         break;
                     default:
@@ -181,13 +185,13 @@ namespace UXAV.Logging
             if (result.Length > size)
             {
                 result = result.Substring(0, size - 2);
-                result = result + "..";
+                result += "..";
             }
             else
             {
                 for (var i = result.Length; i < size; i++)
                 {
-                    result = result + " ";
+                    result += " ";
                 }
             }
 
@@ -196,7 +200,13 @@ namespace UXAV.Logging
 
         public override string ToString()
         {
-            return $"{Level} | {(string.IsNullOrEmpty(TracedName) ? string.Empty : TracedName + " | ")}{Message}";
+            if (MessageType == Logger.MessageType.Exception)
+            {
+                var trace = _stackTrace.ToString().Replace('\r', '\n');
+                return $"{(string.IsNullOrEmpty(TracedName) ? string.Empty : TracedName + " | ")}{Message}\n{trace}";
+            }
+
+            return $"{(string.IsNullOrEmpty(TracedName) ? string.Empty : TracedName + " | ")}{Message}";
         }
     }
 }

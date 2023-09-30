@@ -16,7 +16,7 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           lfs: true
@@ -51,10 +51,10 @@ jobs:
         uses: microsoft/setup-msbuild@v1
         
       - name: Setup NuGet.exe
-        uses: NuGet/setup-nuget@v1.0.5
+        uses: NuGet/setup-nuget@v1
         
       - name: Add Nuget API Key for nuget.org
-        run: nuget setapikey ${{ secrets.NUGET_API_KEY }}
+        run: nuget setapikey ${{ secrets.NUGET_UXAV_API_KEY }}
 
       - name: Nuget Add Source
         run: nuget sources Add -Name "uxav" -Source https://nuget.pkg.github.com/uxav/index.json -username uxav -password ${{ secrets.GITHUB_TOKEN }} -StorePasswordInClearText
