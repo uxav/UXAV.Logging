@@ -1,0 +1,11 @@
+{
+    "image": "mikejobson/test-dev:latest",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-dotnettools.csdevkit",
+                "ms-dotnettools.csharp"
+            ]
+        }
+    }
+}
