@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "dependencies": {
+    ".NETFramework,Version=v4.7.2": {
+      "Crestron.SimplSharp.SDK.Library": {
+        "type": "Direct",
+        "requested": "[2.20.52, )",
+        "resolved": "2.20.52",
+        "contentHash": "AwR6R4QZAr+eiFnj9PoyvIGYJPCEWcA4QuGSl79EEdFCcUhLR6D8TT5pyP2+FQU21/88uvzYsaDsKIHfOtUd1g=="
+      },
+      "Figgle": {
+        "type": "Direct",
+        "requested": "[0.5.1, )",
+        "resolved": "0.5.1",
+        "contentHash": "F21k9oOGRgSb+1dCX0kFDYRBbShSMFvL49xjNmF/dsJwiN5M7zBaSWsYKpi/KZWXVIIxNzTbNTq9ZciucaHYMQ=="
+      },
+      "Microsoft.NETFramework.ReferenceAssemblies": {
+        "type": "Direct",
+        "requested": "[1.0.3, )",
+        "resolved": "1.0.3",
+        "contentHash": "vUc9Npcs14QsyOD01tnv/m8sQUnGTGOw1BCmKcv77LBJY7OxhJ+zJF7UD/sCL3lYNFuqmQEVlkfS4Quif6FyYg==",
+        "dependencies": {
+          "Microsoft.NETFramework.ReferenceAssemblies.net472": "1.0.3"
+        }
+      },
+      "Newtonsoft.Json": {
+        "type": "Direct",
+        "requested": "[13.0.3, )",
+        "resolved": "13.0.3",
+        "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
+      },
+      "Microsoft.NETFramework.ReferenceAssemblies.net472": {
+        "type": "Transitive",
+        "resolved": "1.0.3",
+        "contentHash": "0E7evZXHXaDYYiLRfpyXvCh+yzM2rNTyuZDI+ZO7UUqSc6GfjePiXTdqJGtgIKUwdI81tzQKmaWprnUiPj9hAw=="
+      }
+    },
+    "net6.0": {
+      "Crestron.SimplSharp.SDK.Library": {
+        "type": "Direct",
+        "requested": "[2.20.52, )",
+        "resolved": "2.20.52",
+        "contentHash": "AwR6R4QZAr+eiFnj9PoyvIGYJPCEWcA4QuGSl79EEdFCcUhLR6D8TT5pyP2+FQU21/88uvzYsaDsKIHfOtUd1g=="
+      },
+      "Figgle": {
+        "type": "Direct",
+        "requested": "[0.5.1, )",
+        "resolved": "0.5.1",
+        "contentHash": "F21k9oOGRgSb+1dCX0kFDYRBbShSMFvL49xjNmF/dsJwiN5M7zBaSWsYKpi/KZWXVIIxNzTbNTq9ZciucaHYMQ=="
+      },
+      "Newtonsoft.Json": {
+        "type": "Direct",
+        "requested": "[13.0.3, )",
+        "resolved": "13.0.3",
+        "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
+      }
+    }
+  }
+}

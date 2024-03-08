@@ -10,6 +10,7 @@
         <Description>A logging package for Crestron SimplSharp</Description>
         <Copyright>UXAV 2024</Copyright>
         <PackageTags>crestron simplsharp</PackageTags>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     </PropertyGroup>
     <ItemGroup>
       <PackageReference Include="Crestron.SimplSharp.SDK.Library" Version="2.20.52" />
