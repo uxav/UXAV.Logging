@@ -4,63 +4,29 @@ name: Test Build
 
 on:
   pull_request:
+  push:
 
 env:
-  # This gets updated automatically
-  VERSION: version_string
-  VERSION_TITLE: version_title
-  PRERELEASE: false
+  PROJECT_NAME: UXAV.Logging
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           lfs: true
-      
-      - name: Get Version Number
-        shell: powershell
-        run: |
-          $version = ./.github/scripts/GetVersionFromAssemblyInfo.ps1 -Path UXAV.Logging/Properties/AssemblyInfo.cs
-          Write-Output "Version is: $version"
-          $versionTitle = ./.github/scripts/CreateVersionTitle.ps1 -Version $version
-          Write-Output "Version title is: $version"
-          echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "VERSION_TITLE=$versionTitle" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-      - name: Create pre-release tag
-        if: github.base_ref != 'master'
-        shell: powershell
-        run: |
-          $version = ./.github/scripts/CreateAvailablePreReleaseVersion.ps1 -Version ${{ env.VERSION }} -PreReleaseName beta
-          Write-Output "Version is: $version"
-          $versionTitle = ./.github/scripts/CreateVersionTitle.ps1 -Version $version
-          Write-Output "Version title is: $versionTitle"
-          echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "VERSION_TITLE=$versionTitle" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "PRERELEASE=true" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-      - name: Update AssemblyInfo.cs
-        shell: powershell
-        run: ./.github/scripts/UpdateAssemblyVersion.ps1 -Path UXAV.Logging/Properties/AssemblyInfo.cs -Version ${{ env.VERSION }}
         
-      - name: Setup MsBuild
-        uses: microsoft/setup-msbuild@v1
-        
-      - name: Setup NuGet.exe
-        uses: NuGet/setup-nuget@v1
-
-      - name: Nuget Add Source
-        run: nuget sources Add -Name "uxav" -Source https://nuget.pkg.github.com/uxav/index.json -username uxav -password ${{ secrets.GITHUB_TOKEN }} -StorePasswordInClearText
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v4
 
       - name: Restore Nuget Packages
-        run: nuget restore Logging.sln
+        run: dotnet restore ${{ env.PROJECT_NAME }}
 
       - name: Build
-        run: msbuild Logging.sln /p:Configuration=Release
+        run: dotnet build --configuration Release --no-restore ${{ env.PROJECT_NAME }}
 
       - name: Pack Nuget
-        run: nuget pack UXAV.Logging/UXAV.Logging.csproj
+        run: dotnet pack --configuration Release --no-build --output nupkgs ${{ env.PROJECT_NAME }}
           
