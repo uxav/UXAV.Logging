@@ -23,6 +23,7 @@ jobs:
         with:
           dotnet-version: 6.0.x
           cache: true
+          cache-dependency-path: '${{ env.PROJECT_NAME }}/packages.lock.json'
 
       - name: Restore Nuget Packages
         run: dotnet restore ${{ env.PROJECT_NAME }}
