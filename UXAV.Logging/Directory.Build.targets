@@ -1,4 +1,6 @@
 <Project DefaultTargets="Build">
+
+    <!-- This target is used to ignore SimplSharpNewtonsoft.dll -->
     <Target Name="SimplSharpNewtonsoft" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
         <ItemGroup>
             <ReferencePath Condition="'%(FileName)' == 'SimplSharpNewtonsoft'">
@@ -6,6 +8,9 @@
             </ReferencePath>
         </ItemGroup>
     </Target>
+    
+    <!-- Ignore crestron post process targets as they don't work right now -->
     <Target Name="SimplSharpPostProcess" BeforeTargets="AfterBuild">
     </Target>
+    
 </Project>

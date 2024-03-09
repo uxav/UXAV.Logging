@@ -1,20 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
+        <TargetFrameworks>net6.0;net472;</TargetFrameworks>
+        <Title>UXAV Logger</Title>
+        <LangVersion>8</LangVersion>
         <OutputType>Library</OutputType>
+        <Authors>Mike Jobson</Authors>
+        <PackageId>UXAV.Logging</PackageId>
         <RootNamespace>UXAV.Logging</RootNamespace>
         <AssemblyName>UXAV.Logging</AssemblyName>
-        <TargetFrameworks>net6.0;net472</TargetFrameworks>
-        <Version>2.0.0-beta-1</Version>
-        <Title>UXAV Logging</Title>
-        <Authors>UXAV</Authors>
+        <RepositoryUrl>https://github.com/uxav/UXAV.Logging</RepositoryUrl>
+        <Version>2.0.0</Version>
+        <PackageTags>Crestron, SimplSharp, SimplSharpPro, Crestron.SimplSharp, Crestron.SimplSharpPro, UXAV, UXAV.Logging, Logging</PackageTags>
         <Description>A logging package for Crestron SimplSharp</Description>
-        <Copyright>UXAV 2024</Copyright>
-        <PackageTags>crestron simplsharp</PackageTags>
+        <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     </PropertyGroup>
+    
     <ItemGroup>
       <PackageReference Include="Crestron.SimplSharp.SDK.Library" Version="2.20.52" />
       <PackageReference Include="Figgle" Version="0.5.1" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="README.md"/>
+        <None Include="..\LICENSE.md" Pack="true" PackagePath="LICENSE.md"/>
     </ItemGroup>
 </Project>
