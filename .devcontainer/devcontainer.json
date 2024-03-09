@@ -1,10 +1,13 @@
 {
     "image": "mikejobson/test-dev:latest",
+    "onCreateCommand": "dotnet restore",
     "customizations": {
         "vscode": {
             "extensions": [
                 "ms-dotnettools.csdevkit",
-                "ms-dotnettools.csharp"
+                "ms-dotnettools.csharp",
+                "ms-vscode-remote.remote-containers",
+                "github.vscode-github-actions"
             ]
         }
     }
