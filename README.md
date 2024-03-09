@@ -35,18 +35,29 @@ To use this test library in your project, follow these steps:
    ```csharp
    public ControlSystem()
    {
-     
-   #if DEBUG
-       Logger.Level = Logger.LoggerLevel.Debug;
-       Logger.DefaultLogStreamLevel = Logger.LoggerLevel.Debug;
-   #else
-       Logger.Level = Logger.LoggerLevel.Info;
-       Logger.DefaultLogStreamLevel = Logger.LoggerLevel.Warning;
-   #endif
+      // set this true if running a debug build
+      if(debug)
+      {
+         // Set the logger level to log everything!
+         Logger.Level = Logger.LoggerLevel.Debug;
 
-       Logger.StartConsole((int)(9000 + InitialParametersClass.ApplicationNumber));
-       Logger.Log("Hello, world!");
-   
+         // Stream everything on the console output
+         Logger.DefaultLogStreamLevel = Logger.LoggerLevel.Debug;
+      }
+      else
+      {
+         // Set the logger to ignore debug calls
+         Logger.Level = Logger.LoggerLevel.Info;
+
+         // Only output warnings and above on the console
+         Logger.DefaultLogStreamLevel = Logger.LoggerLevel.Warning;
+      }
+
+      // Start the console server on port 9091 (if loaded in slot 1)
+      Logger.StartConsole((int)(9000 + InitialParametersClass.ApplicationNumber));
+
+      // Log some stuff
+      Logger.Log("Hello, world!");
    }
    ```
 
