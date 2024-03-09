@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 using Crestron.SimplSharp;
 using IPAddress = System.Net.IPAddress;
 // ReSharper disable InconsistentNaming
@@ -13,9 +14,8 @@ namespace UXAV.Logging.Console
     internal sealed class ConsoleServer
     {
         private readonly Dictionary<int, ConsoleConnection> _connections = new Dictionary<int, ConsoleConnection>();
-        private Thread _listeningThread;
-        private bool _listening;
         private string _csPortForwardIp;
+        private CancellationTokenSource _cancellationTokenSource;
         private const byte IAC = 255;
         private const byte DO = 253;
         private const byte WILL = 251;
@@ -39,20 +39,20 @@ namespace UXAV.Logging.Console
         internal void Start(int portNumber)
         {
             Port = portNumber;
-            if (_listeningThread != null && _listeningThread.ThreadState == ThreadState.Running)
+            if (Listening)
             {
                 throw new Exception("Logger already running");
             }
-            
+
             try
             {
                 if (InitialParametersClass.NumberOfExternalEthernetInterfaces > 0)
                 {
                     Logger.Log("Control system has external ethernet interfaces, will attempt to map port to internal IP");
-                    var id = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetCSAdapter); 
+                    var id = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(EthernetAdapterType.EthernetCSAdapter);
                     var controlSubnetIp = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, id);
                     Logger.Log($"CS IP Address is: {controlSubnetIp}");
-                    var result = CrestronEthernetHelper.AddPortForwarding((ushort) portNumber, (ushort) portNumber,
+                    var result = CrestronEthernetHelper.AddPortForwarding((ushort)portNumber, (ushort)portNumber,
                         controlSubnetIp, CrestronEthernetHelper.ePortMapTransport.TCP);
                     if (result == CrestronEthernetHelper.PortForwardingUserPatRetCodes.NoErr)
                     {
@@ -71,14 +71,14 @@ namespace UXAV.Logging.Console
                 Logger.Error(e);
             }
 
-            _listeningThread = new Thread(ListenProcess) {Name = "LoggerRx" + InitialParametersClass.ApplicationNumber};
-            _listeningThread.Start();
+            _cancellationTokenSource = new CancellationTokenSource();
+            Task.Run(ListenProcess, _cancellationTokenSource.Token);
             Logger.Highlight($"Logger started console on port {portNumber}");
         }
 
         public int Port { get; private set; }
 
-        public bool Listening => _listening;
+        public bool Listening { get; private set; }
 
         private void ListenProcess()
         {
@@ -87,7 +87,7 @@ namespace UXAV.Logging.Console
             try
             {
                 server.Start();
-                _listening = true;
+                Listening = true;
                 Logger.Highlight("Started listening for console connections on port {0}", Port);
             }
             catch (Exception e)
@@ -98,7 +98,7 @@ namespace UXAV.Logging.Console
 
             try
             {
-                while (_listening)
+                while (Listening)
                 {
                     var client = server.AcceptTcpClient();
 
@@ -106,19 +106,17 @@ namespace UXAV.Logging.Console
                     var stream = client.GetStream();
                     var bytes = new byte[256];
 
-                    stream.Write(new[] {IAC, DO, TERMINAL}, 0, 3);
+                    stream.Write(new[] { IAC, DO, TERMINAL }, 0, 3);
 
                     try
                     {
-                        // ReSharper disable once NotAccessedVariable
-                        int i;
-                        while (!negotiated && (client.Connected && (i = stream.Read(bytes, 0, bytes.Length)) != 0))
+                        while (!negotiated && (client.Connected && (stream.Read(bytes, 0, bytes.Length)) != 0))
                         {
                             if (bytes[0] != IAC || bytes.Length < 3) continue;
                             if (bytes[1] != WILL || bytes[2] != TERMINAL) continue;
 
-                            stream.Write(new[] {IAC, WILL, ECHO}, 0, 3);
-                            stream.Write(new[] {IAC, WILL, SUPPRESS_GO_AHEAD}, 0, 3);
+                            stream.Write(new[] { IAC, WILL, ECHO }, 0, 3);
+                            stream.Write(new[] { IAC, WILL, SUPPRESS_GO_AHEAD }, 0, 3);
 
                             negotiated = true;
                         }
@@ -151,11 +149,16 @@ namespace UXAV.Logging.Console
                     }
                 }
             }
+            catch (TaskCanceledException)
+            {
+                ErrorLog.Warn("ConsoleServer.ListenProcess() cancelled");
+            }
             catch (Exception e)
             {
-                if(e is ThreadAbortException) return;
-                ErrorLog.Error($"Error in {GetType().Name}.ListenProcess()", e.Message);
+                ErrorLog.Error($"ConsoleServer.ListenProcess() error", e.Message);
             }
+
+            Listening = false;
         }
 
         private void DisposeConnection(int connectionId)
@@ -168,7 +171,6 @@ namespace UXAV.Logging.Console
 
         internal void Stop()
         {
-            _listening = false;
             ConsoleConnection[] clients;
 
             lock (_connections)
@@ -176,22 +178,19 @@ namespace UXAV.Logging.Console
                 clients = _connections.Values.ToArray();
             }
 
-            if (_listeningThread != null && _listeningThread.ThreadState == ThreadState.Running)
-            {
-                _listeningThread.Abort();
-            }
+            _cancellationTokenSource?.Cancel();
 
             foreach (var client in clients)
             {
                 client.Dispose();
             }
-            
-            if(string.IsNullOrEmpty(_csPortForwardIp)) return;
+
+            if (string.IsNullOrEmpty(_csPortForwardIp)) return;
 
             try
             {
                 Logger.Log("Attempting to remove port forwarding for Logger...");
-                var result = CrestronEthernetHelper.RemovePortForwarding((ushort) Port, (ushort) Port, _csPortForwardIp,
+                var result = CrestronEthernetHelper.RemovePortForwarding((ushort)Port, (ushort)Port, _csPortForwardIp,
                     CrestronEthernetHelper.ePortMapTransport.TCP);
                 if (result == CrestronEthernetHelper.PortForwardingUserPatRetCodes.NoErr)
                 {

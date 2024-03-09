@@ -785,9 +785,9 @@ namespace UXAV.Logging
 
         private static void StopLogger()
         {
-            Thread.Sleep(500);
+            Task.Delay(500).Wait();
             Warn("Stopping Logger now!");
-            Thread.Sleep(200);
+            Task.Delay(200).Wait();
             ConsoleServer.Stop();
         }
 
