@@ -1,13 +1,11 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Release
+name: Release Candidate
 
 on:
   pull_request:
     branches:
       - main
-    types:
-      - closed
 
 env:
   PROJECT_NAME: UXAV.Logging
@@ -31,30 +29,31 @@ jobs:
           cache: true
           cache-dependency-path: "${{ env.PROJECT_NAME }}/packages.lock.json"
 
-      - name: Check version number
-        id: check-version
+      - name: Get version number
+        id: get-version
         if: startsWith(github.head_ref, 'release/')
         run: |
           version=$(grep -o '<Version>.*</Version>' **/${{ env.PROJECT_NAME }}.csproj | sed 's/<Version>\(.*\)<\/Version>/\1/')
+          echo "Version is $version"
           if [[ ! $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "Invalid version format: $version"
             exit 1
           fi
-          versionTagToCheck="v$version"
-          echo "Version tag to check is $versionTagToCheck"
           git fetch --tags
           tags=$(git tag --list)
           echo "Looking at tags:\n$tags"
-          for tag in $tags; do
-          if [[ "$tag" == "$versionTagToCheck" ]]; then
-            echo "Version tag $versionTagToCheck exists"
-            exit 1
-          fi
-          done
-          echo "Version tag $versionTagToCheck does not exist"
-          echo "TAG=$versionTagToCheck" >> $GITHUB_ENV
-          echo "VERSION=$version" >> $GITHUB_ENV
-          echo "VERSION_TITLE=Release v$version" >> $GITHUB_ENV
+          count=$(echo $tags | grep -o $version-rc- | wc -l)
+          count=$((count+1))
+          echo "Next rc tag is $count"
+          echo "VERSION=$version-rc-$count" >> $GITHUB_ENV
+          echo "TAG=v$version-rc-$count" >> $GITHUB_ENV
+          echo "VERSION_TITLE=v$version RC $count" >> $GITHUB_ENV
+
+      - name: Rewrite version number
+        id: rewrite-version
+        if: startsWith(github.head_ref, 'release/')
+        run: |
+          sed -i 's/<Version>.*<\/Version>/<Version>${{ env.VERSION }}<\/Version>/' **/${{ env.PROJECT_NAME }}.csproj
 
       - name: Restore nuget packages
         id: restore
@@ -70,22 +69,22 @@ jobs:
 
       - name: Create release
         id: create_release
-        if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'release/')
+        if: startsWith(github.head_ref, 'release/')
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ env.TAG }}
           name: Release ${{ env.VERSION_TITLE }}
           draft: false
-          prerelease: false
+          prerelease: true
           artifacts: |
             nupkgs/*.nupkg
 
       - name: Publish to GitHub
         id: publish_github
-        if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'release/')
+        if: startsWith(github.head_ref, 'release/')
         run: dotnet nuget push nupkgs/*.nupkg --source https://nuget.pkg.github.com/uxav/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to NuGet
         id: publish_nuget
-        if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'release/')
+        if: startsWith(github.head_ref, 'release/')
         run: dotnet nuget push nupkgs/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_UXAV_API_KEY }}

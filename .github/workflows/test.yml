@@ -1,13 +1,15 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Release
+name: Test Build
 
 on:
+  push:
+    branches:
+      - main
+      - feature/*
   pull_request:
     branches:
       - main
-    types:
-      - closed
 
 env:
   PROJECT_NAME: UXAV.Logging
@@ -33,13 +35,9 @@ jobs:
 
       - name: Check version number
         id: check-version
-        if: startsWith(github.head_ref, 'release/')
+        if: github.event_name == 'push'
         run: |
           version=$(grep -o '<Version>.*</Version>' **/${{ env.PROJECT_NAME }}.csproj | sed 's/<Version>\(.*\)<\/Version>/\1/')
-          if [[ ! $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Invalid version format: $version"
-            exit 1
-          fi
           versionTagToCheck="v$version"
           echo "Version tag to check is $versionTagToCheck"
           git fetch --tags
@@ -52,9 +50,7 @@ jobs:
           fi
           done
           echo "Version tag $versionTagToCheck does not exist"
-          echo "TAG=$versionTagToCheck" >> $GITHUB_ENV
           echo "VERSION=$version" >> $GITHUB_ENV
-          echo "VERSION_TITLE=Release v$version" >> $GITHUB_ENV
 
       - name: Restore nuget packages
         id: restore
@@ -68,24 +64,8 @@ jobs:
         id: pack
         run: dotnet pack ${{ env.PROJECT_NAME }} -c Release -v m --no-build --output nupkgs
 
-      - name: Create release
-        id: create_release
-        if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'release/')
-        uses: ncipollo/release-action@v1
+      - name: Upload package to artifacts
+        uses: actions/upload-artifact@v4
         with:
-          tag: ${{ env.TAG }}
-          name: Release ${{ env.VERSION_TITLE }}
-          draft: false
-          prerelease: false
-          artifacts: |
-            nupkgs/*.nupkg
-
-      - name: Publish to GitHub
-        id: publish_github
-        if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'release/')
-        run: dotnet nuget push nupkgs/*.nupkg --source https://nuget.pkg.github.com/uxav/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish to NuGet
-        id: publish_nuget
-        if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'release/')
-        run: dotnet nuget push nupkgs/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_UXAV_API_KEY }}
+          name: ${{ env.PROJECT_NAME }}.${{ env.VERSION }}.nupkg
+          path: nupkgs/${{ env.PROJECT_NAME}}.${{ env.VERSION }}.nupkg
