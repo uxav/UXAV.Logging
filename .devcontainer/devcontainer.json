@@ -1,13 +1,15 @@
 {
-    "image": "mikejobson/test-dev:latest",
-    "onCreateCommand": "dotnet restore",
+    "name": "Logging",
+	"image": "mcr.microsoft.com/devcontainers/dotnet:1-8.0-bookworm",
     "customizations": {
         "vscode": {
             "extensions": [
                 "ms-dotnettools.csdevkit",
                 "ms-dotnettools.csharp",
-                "ms-vscode-remote.remote-containers",
-                "github.vscode-github-actions"
+                "ms-dotnettools.vscodeintellicode-csharp",
+                "esbenp.prettier-vscode",
+                "github.vscode-github-actions",
+                "DotJoshJohnson.xml"
             ]
         }
     }
