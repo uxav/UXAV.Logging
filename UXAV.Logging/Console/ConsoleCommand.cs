@@ -66,6 +66,13 @@ namespace UXAV.Logging.Console
         }
     }
 
+    /// <summary>
+    ///   Delegate for a command received event
+    /// </summary>
+    /// <param name="argString">The whole argument string passed to the command</param>
+    /// <param name="args">A dictionary of arguments and their values</param>
+    /// <param name="connection">The console connection</param>
+    /// <param name="respond">The response action to write back to the connection</param>
     public delegate void CommandReceivedCallback(string argString, ReadOnlyDictionary<string, string> args,
         ConsoleConnection connection, CommandResponseAction respond);
 }
