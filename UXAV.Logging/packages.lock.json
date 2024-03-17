@@ -54,6 +54,26 @@
         "resolved": "13.0.3",
         "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
       }
+    },
+    "net8.0": {
+      "Crestron.SimplSharp.SDK.Library": {
+        "type": "Direct",
+        "requested": "[2.20.52, )",
+        "resolved": "2.20.52",
+        "contentHash": "AwR6R4QZAr+eiFnj9PoyvIGYJPCEWcA4QuGSl79EEdFCcUhLR6D8TT5pyP2+FQU21/88uvzYsaDsKIHfOtUd1g=="
+      },
+      "Figgle": {
+        "type": "Direct",
+        "requested": "[0.5.1, )",
+        "resolved": "0.5.1",
+        "contentHash": "F21k9oOGRgSb+1dCX0kFDYRBbShSMFvL49xjNmF/dsJwiN5M7zBaSWsYKpi/KZWXVIIxNzTbNTq9ZciucaHYMQ=="
+      },
+      "Newtonsoft.Json": {
+        "type": "Direct",
+        "requested": "[13.0.3, )",
+        "resolved": "13.0.3",
+        "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
+      }
     }
   }
 }

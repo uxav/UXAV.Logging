@@ -24,6 +24,26 @@ namespace UXAV.Logging
         private static readonly MessageStack MessageHistory = new MessageStack(1000);
         private static LoggerLevel _level = LoggerLevel.Info;
 
+        /// <summary>
+        ///   <para>
+        ///     Logging service which stores logs in memory and has build in console server.
+        ///     Up to 1000 logs are stored in memory and can be accessed via the console server.
+        ///   </para>
+        ///   <para>
+        ///     The console server can be started and then and can be accessed via telnet.
+        ///     The default port is 9001 but can be changed by calling <see cref="StartConsole"/> with a different port number.
+        ///   </para>
+        ///   <para>
+        ///     The console server has a built in help command which will list all available commands.
+        ///     The console server also has a built in "tail" command which will list the last 50 logs or a specified number of logs.
+        ///     The console server also has a built in "log" command which will write a log entry.
+        ///     The console server also has a built in "level" command which will get the current logging level.
+        ///     The console server also has a built in "logstreamlevel" command which will set the level logs stream on this connection.
+        ///    </para>
+        ///    <para>
+        ///     You can also add your own commands by calling <see cref="AddCommand"/>.
+        ///    </para>
+        /// </summary>
         static Logger()
         {
             ConsoleServer = new ConsoleServer();
@@ -260,7 +280,7 @@ namespace UXAV.Logging
             LoggerLevel level;
             try
             {
-                level = (LoggerLevel) Enum.Parse(typeof(LoggerLevel), args["level"], true);
+                level = (LoggerLevel)Enum.Parse(typeof(LoggerLevel), args["level"], true);
             }
             catch
             {
@@ -341,7 +361,7 @@ namespace UXAV.Logging
 
             var response = string.Empty;
             CrestronConsole.SendControlSystemCommand("autodiscover query tableformat", ref response);
-            var lines = response.Split(new[] {"\r\n"}, StringSplitOptions.RemoveEmptyEntries);
+            var lines = response.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             var table = new ConsoleTable("Model", "IP Address", "HostName", "IP ID", "Interface", "Version",
                 "Mac Address");
             foreach (var line in lines)
@@ -463,6 +483,15 @@ namespace UXAV.Logging
             }
         }
 
+        /// <summary>
+        ///  Add a command to the console server which then can be invoked with optional arguments.
+        /// </summary>
+        /// <param name="callback">The callback when the command is invoked</param>
+        /// <param name="commandName">The command name</param>
+        /// <param name="description">A description of the command</param>
+        /// <param name="argNames">Optional arguments you wish to pass in the command</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
         public static ConsoleCommand AddCommand(CommandReceivedCallback callback, string commandName,
             string description, params string[] argNames)
         {
@@ -495,7 +524,7 @@ namespace UXAV.Logging
             }
         }
 
-        public static void StartConsole(int portNumber)
+        public static void StartConsole(int portNumber = 9001)
         {
             ConsoleServer.Start(portNumber);
         }

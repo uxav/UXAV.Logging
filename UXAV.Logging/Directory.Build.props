@@ -1,0 +1,34 @@
+<Project>
+    <PropertyGroup>
+
+        <OutputType>Library</OutputType>
+        <RootNamespace>UXAV.Logging</RootNamespace>
+        <AssemblyName>UXAV.Logging</AssemblyName>
+        <TargetFrameworks>net8.0;net6.0;net472;</TargetFrameworks>
+        <LangVersion>default</LangVersion>
+        <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+        <Deterministic>false</Deterministic>
+
+        <Copyright>©Copyright Mike Jobson 2024</Copyright>
+        <PackageTitle>UXAV Logger</PackageTitle>
+        <Authors>Mike Jobson</Authors>
+        <PackageId>UXAV.Logging</PackageId>
+        <RepositoryUrl>https://github.com/uxav/UXAV.Logging</RepositoryUrl>
+        <PackageTags>Crestron, SimplSharp, SimplSharpPro, Crestron.SimplSharp, Crestron.SimplSharpPro, UXAV, UXAV.Logging, Logging</PackageTags>
+        <Description>A logging package for Crestron SimplSharp</Description>
+
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+        <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+
+        <!--Documentation file path-->
+        <DocumentationFile>$(AssemblyName).xml</DocumentationFile>
+
+        <!--Ignoring warnings on lack of documentation for now. There's a lot to go through-->
+        <NOWARN>CS1591</NOWARN>
+
+        <Version>2.0.0</Version>
+        <AssemblyVersion>2.0.*</AssemblyVersion>
+
+    </PropertyGroup>
+</Project>

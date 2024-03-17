@@ -35,16 +35,15 @@ jobs:
 
       - name: Check version number
         id: check-version
-        if: github.event_name == 'push'
         run: |
-          version=$(grep -o '<Version>.*</Version>' **/${{ env.PROJECT_NAME }}.csproj | sed 's/<Version>\(.*\)<\/Version>/\1/')
+          version=$(grep -o '<Version>.*</Version>' ${{ env.PROJECT_NAME }}/Directory.Build.props | sed 's/<Version>\(.*\)<\/Version>/\1/')
           versionTagToCheck="v$version"
           echo "Version tag to check is $versionTagToCheck"
           git fetch --tags
           tags=$(git tag --list)
           echo "Looking at tags:\n$tags"
           for tag in $tags; do
-          if [[ "$tag" == "$versionTagToCheck" ]]; then
+          if [[ "$tag" == "$versionTagToCheck" && ${{ github.event_name }} == 'push' ]]; then
             echo "Version tag $versionTagToCheck exists"
             exit 1
           fi

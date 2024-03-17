@@ -61,6 +61,12 @@ To use this test library in your project, follow these steps:
    }
    ```
 
+## Release Notes
+
+### v2.0.0
+
+- Reconfigured workspace to new style SDK format and added support for .NET 6.0
+
 ## Documentation
 
 TBC
