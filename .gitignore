@@ -5,3 +5,7 @@ riderModule.iml
 /_ReSharper.Caches/
 .DS_Store
 nupkgs/
+.mono/
+
+# ignore generated xml documentation
+UXAV.Logging/UXAV.Logging.xml

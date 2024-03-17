@@ -33,7 +33,7 @@ jobs:
         id: get-version
         if: startsWith(github.head_ref, 'release/')
         run: |
-          version=$(grep -o '<Version>.*</Version>' **/${{ env.PROJECT_NAME }}.csproj | sed 's/<Version>\(.*\)<\/Version>/\1/')
+          version=$(grep -o '<Version>.*</Version>' **/${{ env.PROJECT_NAME }}/Directory.Build.props | sed 's/<Version>\(.*\)<\/Version>/\1/')
           echo "Version is $version"
           if [[ ! $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "Invalid version format: $version"
@@ -53,7 +53,7 @@ jobs:
         id: rewrite-version
         if: startsWith(github.head_ref, 'release/')
         run: |
-          sed -i 's/<Version>.*<\/Version>/<Version>${{ env.VERSION }}<\/Version>/' **/${{ env.PROJECT_NAME }}.csproj
+          sed -i 's/<Version>.*<\/Version>/<Version>${{ env.VERSION }}<\/Version>/' **/${{ env.PROJECT_NAME }}/Directory.Build.props
 
       - name: Restore nuget packages
         id: restore
